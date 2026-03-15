@@ -54,3 +54,17 @@ Thumbs.db
 # Flutter plugins
 .flutter-plugins*
 .packages
+
+# Repository Cleanup Additions
+*.temp
+analysis*.txt
+
+# Firebase Secrets
+google-services.json
+GoogleService-Info.plist
+firebase_credentials.json
+*-private-key.json
+*.pem
+
+# Ensure firebase_options.dart is NOT ignored
+!lib/firebase_options.dart
