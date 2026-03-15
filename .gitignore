@@ -59,12 +59,14 @@ Thumbs.db
 *.temp
 analysis*.txt
 
-# Firebase Secrets
+# Firebase and Deployment Secrets
 google-services.json
 GoogleService-Info.plist
 firebase_credentials.json
 *-private-key.json
 *.pem
+*.jks
+*.keystore
 
 # Ensure firebase_options.dart is NOT ignored
 !lib/firebase_options.dart
