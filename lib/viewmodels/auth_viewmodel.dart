@@ -24,6 +24,13 @@ class AuthViewModel extends Notifier<AuthState> {
 
   @override
   AuthState build() {
+    _auth.authStateChanges().listen((user) {
+      state = AuthState(
+        user: user,
+        isLoading: state.isLoading,
+        errorMessage: state.errorMessage,
+      );
+    });
     return AuthState(user: _auth.currentUser);
   }
 

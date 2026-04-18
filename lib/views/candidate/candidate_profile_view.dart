@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/profile_viewmodel.dart';
-import '../../viewmodels/auth_viewmodel.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/user_profile_model.dart';
 import '../../core/theme.dart';
 
@@ -24,35 +24,46 @@ class _CandidateProfileViewState extends ConsumerState<CandidateProfileView> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadProfile();
+    });
   }
 
   Future<void> _loadProfile() async {
-    final authState = ref.read(authViewModelProvider);
-    final user = authState.user;
+    final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
     // Fetch profile data
     await ref.read(profileViewModelProvider.notifier).fetchProfile(user.uid);
+
+    if (!mounted) return;
 
     // Populate controllers
     final profile = ref.read(profileViewModelProvider).profile;
     if (profile != null) {
       _nameController.text = profile.name;
       _bioController.text = profile.bio;
-      _skills.clear();
-      _skills.addAll(profile.skills);
+      setState(() {
+        _skills.clear();
+        _skills.addAll(profile.skills);
+      });
     } else {
       // Fallback for missing profile
       _nameController.text = user.displayName ?? '';
       _bioController.text = '';
-      _skills.clear();
+      setState(() {
+        _skills.clear();
+      });
     }
   }
 
   Future<void> _saveProfile() async {
-    final authState = ref.read(authViewModelProvider);
-    final user = authState.user;
+    // Attempt to add any lingering text in the skill input field
+    if (_skillInputController.text.trim().isNotEmpty) {
+      _addSkill();
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

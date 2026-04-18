@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,11 +18,12 @@ class ProfileState {
     UserProfile? profile,
     bool? isLoading,
     String? errorMessage,
+    bool clearError = false,
   }) {
     return ProfileState(
       profile: profile ?? this.profile,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }
@@ -38,7 +38,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
   }
 
   Future<void> fetchProfile(String uid) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -65,7 +65,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
       if (doc.exists && doc.data() != null) {
         state = state.copyWith(
           profile: UserProfile.fromMap(doc.data()!, uid),
-          errorMessage: null, // Ensure any previous error is cleared
+          clearError: true, // Ensure any previous error is cleared
         );
       } else {
         state = state.copyWith(
@@ -78,7 +78,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
             resumeUrl: '',
             avatarUrl: '',
           ),
-          errorMessage: null, // No error for missing doc, it's a new user
+          clearError: true, // No error for missing doc, it's a new user
         );
       }
     } on FirebaseException catch (e) {
@@ -112,7 +112,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
     // Only update loading state if not already loading (to avoid overriding upload loading)
     final bool alreadyLoading = state.isLoading;
     if (!alreadyLoading) {
-      state = state.copyWith(isLoading: true, errorMessage: null);
+      state = state.copyWith(isLoading: true, clearError: true);
     }
 
     try {
@@ -123,7 +123,7 @@ class ProfileViewModel extends Notifier<ProfileState> {
       state = state.copyWith(
         profile: profile,
         isLoading: false,
-        errorMessage: null,
+        clearError: true,
       );
     } catch (e) {
       debugPrint('!!! SAVE PROFILE ERROR: $e !!!');
@@ -146,13 +146,16 @@ class ProfileViewModel extends Notifier<ProfileState> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
+        withData: true,
       );
 
-      if (result != null && result.files.single.path != null) {
-        final filePath = result.files.single.path!;
-        state = state.copyWith(isLoading: true, errorMessage: null);
+      if (result != null && result.files.single.bytes != null) {
+        state = state.copyWith(isLoading: true, clearError: true);
         try {
-          final url = await _cloudinaryService.uploadFile(File(filePath));
+          final url = await _cloudinaryService.uploadFileBytes(
+              result.files.single.bytes!,
+              result.files.single.name,
+              isRaw: true);
           if (url != null) {
             final updatedProfile = state.profile!.copyWith(resumeUrl: url);
             await saveProfile(updatedProfile);
@@ -186,9 +189,10 @@ class ProfileViewModel extends Notifier<ProfileState> {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
-        state = state.copyWith(isLoading: true, errorMessage: null);
+        state = state.copyWith(isLoading: true, clearError: true);
         try {
-          final url = await _cloudinaryService.uploadFile(File(image.path));
+          final bytes = await image.readAsBytes();
+          final url = await _cloudinaryService.uploadFileBytes(bytes, image.name);
           if (url != null) {
             final updatedProfile = state.profile!.copyWith(avatarUrl: url);
             await saveProfile(updatedProfile);

@@ -31,6 +31,15 @@
 
   <title>ag_jobportal</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+          console.log('SW Registered!', reg);
+        });
+      });
+    }
+  </script>
 </head>
 <body>
   <!--

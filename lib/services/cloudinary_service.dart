@@ -29,4 +29,29 @@ class CloudinaryService {
       );
     }
   }
+
+  /// Uploads raw bytes to Cloudinary and returns the secure URL.
+  Future<String?> uploadFileBytes(List<int> bytes, String filename, {bool isRaw = false}) async {
+    final resourceType = isRaw ? 'raw' : 'auto';
+    final url = Uri.parse(
+      'https://api.cloudinary.com/v1_1/$cloudName/$resourceType/upload',
+    );
+
+    final request = http.MultipartRequest('POST', url)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseData = await response.stream.bytesToString();
+      final json = jsonDecode(responseData);
+      return json['secure_url'] as String?;
+    } else {
+      final errorData = await response.stream.bytesToString();
+      throw Exception(
+        'Cloudinary upload failed: ${response.statusCode} - $errorData',
+      );
+    }
+  }
 }

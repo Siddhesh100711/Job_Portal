@@ -19,6 +19,16 @@ class ApplicationViewModel extends Notifier<void> {
       throw Exception('You must be signed in to apply.');
     }
 
+    final existingApp = await _firestore
+        .collection('applications')
+        .where('jobId', isEqualTo: jobId)
+        .where('candidateId', isEqualTo: user.uid)
+        .get();
+
+    if (existingApp.docs.isNotEmpty) {
+      throw Exception('You have already applied for this job.');
+    }
+
     final newApp = Application(
       id: const Uuid().v4(),
       jobId: jobId,
@@ -54,16 +64,18 @@ final applicantsForJobProvider =
     });
 
 /// Fetches a UserProfile by uid for display (used for applicant cards).
-final userProfileProvider = FutureProvider.family<UserProfile?, String>((
+final userProfileProvider = StreamProvider.family<UserProfile?, String>((
   ref,
   uid,
-) async {
-  final doc = await FirebaseFirestore.instance
+) {
+  return FirebaseFirestore.instance
       .collection('users')
       .doc(uid)
-      .get();
-  if (doc.exists && doc.data() != null) {
-    return UserProfile.fromMap(doc.data()!, uid);
-  }
-  return null;
+      .snapshots()
+      .map((doc) {
+    if (doc.exists && doc.data() != null) {
+      return UserProfile.fromMap(doc.data()!, uid);
+    }
+    return null;
+  });
 });

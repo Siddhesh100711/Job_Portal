@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/application_viewmodel.dart';
+import '../../models/user_profile_model.dart';
 import '../../core/theme.dart';
 
 class JobApplicantsView extends ConsumerWidget {
@@ -92,13 +93,128 @@ class _ApplicantCard extends ConsumerWidget {
     }
   }
 
+  void _showApplicantDetails(BuildContext context, UserProfile profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) {
+             return Container(
+               decoration: const BoxDecoration(
+                 color: AppTheme.darkBackground,
+                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+               ),
+               padding: const EdgeInsets.all(24.0),
+               child: ListView(
+                 controller: controller,
+                 children: [
+                   Center(
+                     child: Container(
+                       width: 40,
+                       height: 4,
+                       margin: const EdgeInsets.only(bottom: 24),
+                       decoration: BoxDecoration(
+                         color: Colors.white24,
+                         borderRadius: BorderRadius.circular(2),
+                       ),
+                     ),
+                   ),
+                   Center(
+                     child: Container(
+                       width: 100, height: 100,
+                       decoration: BoxDecoration(
+                         color: AppTheme.surfaceDark,
+                         shape: BoxShape.circle,
+                         border: Border.all(
+                           color: AppTheme.electricIndigo.withValues(alpha: 0.3),
+                           width: 2,
+                         ),
+                       ),
+                       child: ClipOval(
+                         child: profile.avatarUrl.isNotEmpty
+                             ? CachedNetworkImage(
+                                 imageUrl: profile.avatarUrl,
+                                 fit: BoxFit.cover,
+                                 placeholder: (context, url) => const Center(
+                                   child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.electricIndigo),
+                                 ),
+                                 errorWidget: (context, url, error) => const Icon(Icons.person_rounded, size: 50, color: Colors.white24),
+                               )
+                             : const Icon(Icons.person_rounded, size: 50, color: Colors.white24),
+                       ),
+                     ),
+                   ),
+                   const SizedBox(height: 16),
+                   Text(profile.name.isNotEmpty ? profile.name : 'Unknown Candidate', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                   const SizedBox(height: 4),
+                   Text(profile.email, style: const TextStyle(color: Colors.white54, fontSize: 14), textAlign: TextAlign.center),
+                   const SizedBox(height: 24),
+                   if (profile.bio.isNotEmpty) ...[
+                     Text('Bio', style: Theme.of(context).textTheme.titleMedium),
+                     const SizedBox(height: 8),
+                     Text(profile.bio, style: const TextStyle(color: Colors.white70, height: 1.5)),
+                     const SizedBox(height: 24),
+                   ],
+                   if (profile.skills.isNotEmpty) ...[
+                     Text('Skills', style: Theme.of(context).textTheme.titleMedium),
+                     const SizedBox(height: 12),
+                     Wrap(
+                       spacing: 8.0, runSpacing: 8.0,
+                       children: profile.skills.map((skill) => Chip(
+                         label: Text(skill, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                         backgroundColor: AppTheme.surfaceDark,
+                         side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                       )).toList(),
+                     ),
+                     const SizedBox(height: 32),
+                   ],
+                   if (profile.resumeUrl.isNotEmpty) 
+                     FilledButton.icon(
+                       onPressed: () => _viewResume(context, profile.resumeUrl),
+                       icon: const Icon(Icons.picture_as_pdf_rounded),
+                       label: const Padding(
+                         padding: EdgeInsets.all(14.0),
+                         child: Text('View Full Resume', style: TextStyle(fontSize: 16)),
+                       ),
+                     )
+                   else
+                     Container(
+                       padding: const EdgeInsets.all(16),
+                       decoration: BoxDecoration(
+                         color: Colors.white.withValues(alpha: 0.05),
+                         borderRadius: BorderRadius.circular(12),
+                       ),
+                       child: const Text('No resume provided by candidate.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54)),
+                     ),
+                 ],
+               ),
+             );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(
       userProfileProvider(application.candidateId),
     );
 
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        profileAsync.whenData((profile) {
+          if (profile != null) {
+            _showApplicantDetails(context, profile);
+          }
+        });
+      },
+      child: Container(
           margin: const EdgeInsets.only(bottom: 16.0),
           decoration: BoxDecoration(
             color: AppTheme.premiumSurface,
@@ -285,6 +401,7 @@ class _ApplicantCard extends ConsumerWidget {
           end: 0,
           duration: 400.ms,
           delay: Duration(milliseconds: index * 100),
-        );
+        ),
+    );
   }
 }
