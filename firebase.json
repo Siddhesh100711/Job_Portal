@@ -1,1 +1,38 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"my-job-portal-07110","appId":"1:890277765700:android:c1b9d594b7c28b700ed211","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"my-job-portal-07110","configurations":{"android":"1:890277765700:android:c1b9d594b7c28b700ed211","ios":"1:890277765700:ios:3a204079fae015550ed211","web":"1:890277765700:web:79cf2f6000da3ffd0ed211","windows":"1:890277765700:web:440ed3564bb151d90ed211"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "my-job-portal-07110",
+          "appId": "1:890277765700:android:c1b9d594b7c28b700ed211",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "my-job-portal-07110",
+          "configurations": {
+            "android": "1:890277765700:android:c1b9d594b7c28b700ed211",
+            "ios": "1:890277765700:ios:3a204079fae015550ed211",
+            "web": "1:890277765700:web:79cf2f6000da3ffd0ed211",
+            "windows": "1:890277765700:web:440ed3564bb151d90ed211"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
