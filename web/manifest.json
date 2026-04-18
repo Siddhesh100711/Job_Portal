@@ -1,6 +1,6 @@
 {
-    "name": "ag_jobportal",
-    "short_name": "ag_jobportal",
+  "name": "JobKaro",
+  "short_name": "JobKaro",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

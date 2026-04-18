@@ -122,7 +122,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     ),
                 const SizedBox(height: 32),
                 Text(
-                  _isLoginMode ? 'Welcome\nBack' : 'Create\nAccount',
+                  _isLoginMode ? 'Welcome to\nJobKaro' : 'Join\nJobKaro',
                   style: Theme.of(
                     context,
                   ).textTheme.displayLarge?.copyWith(height: 1.1, fontSize: 42),

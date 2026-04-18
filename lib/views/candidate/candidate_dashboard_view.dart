@@ -35,7 +35,7 @@ class CandidateDashboardView extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
-        title: const Text('Discover Roles'),
+        title: const Text('JobKaro - Discover Roles'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline_rounded),

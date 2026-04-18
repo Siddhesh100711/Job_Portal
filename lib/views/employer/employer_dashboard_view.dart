@@ -16,7 +16,7 @@ class EmployerDashboardView extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.darkBackground,
       appBar: AppBar(
-        title: const Text('Posted Roles'),
+        title: const Text('JobKaro - Employer'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded),
